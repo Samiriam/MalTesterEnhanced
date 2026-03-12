@@ -537,6 +537,21 @@ def main():
     
     args = parser.parse_args()
     
+    # Solicitar API key si no se proporciono y no se pidio omitir
+    if not args.no_virustotal:
+        api_key = args.api_key or os.environ.get('VT_API_KEY')
+        if not api_key:
+            print("\n[INFO] No se detecto API key de VirusTotal")
+            print("[INFO] Ingresa tu API key (o presiona Enter para omitir):")
+            api_key = input("> ").strip()
+            if api_key:
+                os.environ['VT_API_KEY'] = api_key
+                print("[OK] API key configurada para esta sesion")
+                args.api_key = api_key
+            else:
+                print("[INFO] VirusTotal sera omitido")
+                args.no_virustotal = True
+    
     # Verificar directorio
     if not os.path.isdir(args.directory):
         print(f"{Colors.RED}Error: El directorio '{args.directory}' no existe{Colors.END}")

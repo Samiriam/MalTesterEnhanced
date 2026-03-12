@@ -661,6 +661,28 @@ def main():
     
     args = parser.parse_args()
     
+    # Solicitar API key si no se proporciono
+    api_key = args.api_key or os.environ.get('VT_API_KEY')
+    if not api_key:
+        print("\n[INFO] No se detecto API key de VirusTotal")
+        print("[INFO] Ingresa tu API key (o presiona Enter para omitir):")
+        api_key = input("> ").strip()
+        if api_key:
+            # Guardar temporalmente en variable de entorno para esta sesion
+            os.environ['VT_API_KEY'] = api_key
+            print("[OK] API key configurada para esta sesion")
+        else:
+            print("[INFO] VirusTotal sera omitido")
+    
+    # Solicitar URLVoid API key si no se proporciono
+    urlvoid_key = args.urlvoid_key or os.environ.get('URLVOID_API_KEY')
+    if not urlvoid_key:
+        print("\n[INFO] Ingresa tu API key de URLVoid (o presiona Enter para omitir):")
+        urlvoid_key = input("> ").strip()
+        if urlvoid_key:
+            os.environ['URLVOID_API_KEY'] = urlvoid_key
+            print("[OK] URLVoid API key configurada para esta sesion")
+    
     # Cargar URLs
     urls = []
     

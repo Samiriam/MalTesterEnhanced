@@ -1,0 +1,7 @@
+# Lista de URLs para analizar
+# Formato: una URL por linea
+# Las lineas que comienzan con # son comentarios
+
+# Ejemplos:
+# https://example.com/malware.exe
+# http://suspicious-site.com/payload.exe

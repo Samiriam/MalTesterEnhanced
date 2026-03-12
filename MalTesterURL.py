@@ -369,7 +369,7 @@ class MalTesterURL:
             with open(filepath, 'r', encoding='utf-8') as f:
                 for line in f:
                     line = line.strip()
-                    # Ignorar comentarios y líneas vacías
+                    # Ignorar comentarios y lineas vacias
                     if line and not line.startswith('#'):
                         # Validar que sea una URL
                         if line.startswith(('http://', 'https://', 'ftp://')):
@@ -378,11 +378,35 @@ class MalTesterURL:
                             # Agregar esquema si no tiene
                             urls.append(f"https://{line}")
         except FileNotFoundError:
-            print(f"{Colors.RED}Error: Archivo no encontrado: {filepath}{Colors.END}")
+            print(f"Error: Archivo no encontrado: {filepath}")
         except Exception as e:
-            print(f"{Colors.RED}Error leyendo archivo: {e}{Colors.END}")
+            print(f"Error leyendo archivo: {e}")
         
         return urls
+    
+    def load_urls_from_phishank(self, limit: int = 100) -> List[str]:
+        """Carga URLs de PhishTank (servicio gratuito)"""
+        print("Descargando URLs de PhishTank...")
+        try:
+            # PhishTank tiene un archivo CSV con URLs de phishing conocidas
+            url = "https://www.phishtank.com/phish_xml.php?active=y&valid=y"
+            # Nota: PhishTank requiere API key para descarga programa
+            # Usaremos lista publica alternativa
+            alt_url = "https://openphish.com feed.txt"
+            response = requests.get("https://openphish.com/feed.txt", timeout=30)
+            if response.status_code == 200:
+                urls = []
+                for line in response.text.split('\n'):
+                    line = line.strip()
+                    if line and line.startswith('http'):
+                        urls.append(line)
+                        if len(urls) >= limit:
+                            break
+                print(f"  [OK] {len(urls)} URLs cargadas de OpenPhish")
+                return urls
+        except Exception as e:
+            print(f"  [X] Error: {e}")
+        return []
     
     def run(self, urls: List[str]) -> List[Dict]:
         """Ejecuta el análisis completo"""
@@ -630,6 +654,10 @@ def main():
                        help='Timeout para descargas (segundos)')
     parser.add_argument('--url', dest='single_url',
                        help='Analizar una URL individual')
+    parser.add_argument('--phish', dest='load_phish', action='store_true',
+                       help='Cargar URLs de OpenPhish (lista publica)')
+    parser.add_argument('--phish-limit', dest='phish_limit', type=int, default=50,
+                       help='Cantidad de URLs de phishing a cargar (default: 50)')
     
     args = parser.parse_args()
     
@@ -639,6 +667,10 @@ def main():
     if args.single_url:
         urls = [args.single_url]
         print(f"URL a analizar: {urls[0]}\n")
+    elif args.load_phish:
+        # Cargar URLs desde OpenPhish
+        analyzer = MalTesterURL()
+        urls = analyzer.load_urls_from_phishank(limit=args.phish_limit)
     else:
         # Intentar cargar desde archivo
         if os.path.isfile(args.urls_file):
@@ -663,46 +695,3 @@ def main():
             print("\nPresiona Enter para salir...")
             input()
             return
-    
-    if not urls:
-        print(f"[ERROR] No se encontraron URLs para analizar")
-        print("\nPresiona Enter para salir...")
-        input()
-        return
-    
-    print(f"URLs cargadas: {len(urls)}\n")
-    
-    # Crear analizador
-    analyzer = MalTesterURL(
-        api_key=args.api_key,
-        urlvoid_key=args.urlvoid_key,
-        download_files=not args.no_download,
-        delay=args.delay,
-        timeout=args.timeout
-    )
-    
-    # Ejecutar analisis
-    results = analyzer.run(urls)
-    
-    # Mostrar resumen
-    analyzer.print_summary()
-    
-    # Guardar reportes
-    analyzer.save_log(args.output)
-    
-    if args.json:
-        analyzer.save_json()
-    
-    if args.csv:
-        analyzer.save_csv()
-    
-    # Limpiar archivos temporales
-    analyzer.cleanup()
-    
-    print(f"\n[OK] Analisis completado\n")
-    print("Presiona Enter para salir...")
-    input()
-
-
-if __name__ == "__main__":
-    main()

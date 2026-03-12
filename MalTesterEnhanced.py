@@ -44,10 +44,14 @@ VT_API_URL = "https://www.virustotal.com/api/v3"
 VT_HEADERS = {"Accept": "application/json"}
 
 class Colors:
-    """Colores para terminal"""
-    GREEN = '\033[92m'
-    RED = '\033[91m'
-    YELLOW = '\033[93m'
+    """Colores para terminal - desactivados para compatibilidad"""
+    GREEN = ''
+    RED = ''
+    YELLOW = ''
+    BLUE = ''
+    CYAN = ''
+    BOLD = ''
+    END = ''
     BLUE = '\033[94m'
     CYAN = '\033[96m'
     BOLD = '\033[1m'
@@ -309,10 +313,10 @@ class MalTesterEnhanced:
             return False
     
     def run(self) -> List[Dict]:
-        """Ejecuta el análisis completo"""
-        print(f"\n{Colors.BOLD}{'='*60}{Colors.END}")
-        print(f"{Colors.BOLD}MalTester Enhanced - Analizador de Malware{Colors.END}")
-        print(f"{Colors.BOLD}{'='*60}{Colors.END}")
+        """Ejecuta el analisis completo"""
+        print(f"\n{'='*60}")
+        print("MalTester Enhanced - Analizador de Malware")
+        print(f"{'='*60}")
         print(f"\nDirectorio: {self.directory}")
         print(f"VirusTotal: {'[OK]' if self.use_virustotal else '[X]'}")
         print(f"Timeout: {self.timeout}s | Delay: {self.delay}s\n")
@@ -354,25 +358,25 @@ class MalTesterEnhanced:
             
             # Mostrar resultado individual
             if result['blocked_by_av']:
-                print(f"  {Colors.RED}[BLOQUEADO] Antivirus detecto la muestra{Colors.END}")
+                print(f"  [BLOQUEADO] Antivirus detecto la muestra")
             elif result['executed']:
-                print(f"  {Colors.GREEN}[EJECUTADO] Muestra paso el AV{Colors.END}")
+                print(f"  [EJECUTADO] Muestra paso el AV")
             else:
-                print(f"  {Colors.YELLOW}[ERROR] {result.get('error', 'Error desconocido')}{Colors.END}")
+                print(f"  [ERROR] {result.get('error', 'Error desconocido')}")
             
             # Verificar VirusTotal (COMPLEMENTO)
             if result['vt_result'] and result['vt_result'].get('available'):
                 vt = result['vt_result']
                 if vt.get('is_malicious'):
-                    print(f"  {Colors.RED}[VT] {vt.get('detection_ratio')} - MALICIOUS{Colors.END}")
+                    print(f"  [VT] {vt.get('detection_ratio')} - MALICIOUS")
                 elif vt.get('not_found'):
-                    print(f"  {Colors.YELLOW}[VT] No encontrado en DB{Colors.END}")
+                    print(f"  [VT] No encontrado en DB")
                 else:
-                    print(f"  {Colors.GREEN}[VT] {vt.get('detection_ratio')} - Clean{Colors.END}")
+                    print(f"  [VT] {vt.get('detection_ratio')} - Clean")
             
-            # Mostrar estadísticas en tiempo real
+            # Mostrar estadisticas en tiempo real
             block_rate = (self.stats['blocked'] / i) * 100 if i > 0 else 0
-            print(f"\n  {Colors.BOLD}Estadisticas (tiempo real):{Colors.END}")
+            print(f"\n  Estadisticas tiempo real:")
             print(f"    Analizados: {i}/{self.stats['total']}")
             print(f"    Bloqueados: {self.stats['blocked']} ({block_rate:.1f}%)")
             print(f"    Ejecutados: {self.stats['passed']}")
